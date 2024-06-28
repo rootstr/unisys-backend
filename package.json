@@ -7,6 +7,9 @@
   "imports": {
     "@/*": "./src/**/*"
   },
+  "_moduleAliases": {
+    "@": "dist/src"
+  },
   "scripts": {
     "build": "concurrently \"rimraf ./dist\" \"npx tsc\"",
     "start": "concurrently \"npm run build\" \"node ./dist/src/index\" ",
@@ -24,7 +27,8 @@
     "@fastify/error": "^3.4.1",
     "@fastify/jwt": "^8.0.1",
     "@fastify/swagger": "^8.14.0",
-    "@fastify/swagger-ui": "^3.0.0",
+    "@fastify/swagger-ui": "^3.1.0",
+    "@types/module-alias": "^2.0.4",
     "bcrypt": "^5.1.1",
     "close-with-grace": "^1.3.0",
     "date-fns": "^3.6.0",
@@ -33,8 +37,7 @@
     "fastify-plugin": "^4.5.1",
     "fastify-type-provider-zod": "^1.2.0",
     "lodash": "^4.17.21",
-    "reflect-metadata": "^0.2.2",
-    "tsyringe": "^4.8.0",
+    "module-alias": "^2.2.3",
     "typescript": "^5.4.5",
     "zod": "^3.23.8"
   },
