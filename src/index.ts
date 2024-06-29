@@ -1,4 +1,4 @@
-import "module-alias/register";
+import "./helpers/module-aliases";
 import { FastifyApp } from "@/app/serverApp";
 import closeWithGrace from "close-with-grace";
 
