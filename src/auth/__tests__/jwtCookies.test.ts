@@ -10,13 +10,23 @@ describe("verify the jwt token validator plugin", () => {
     await app.initializeConfig();
 
     app.fastify.get("/generate-token", async (_request, reply) => {
-      const token = app.fastify.jwt.sign({ requestId: randomUUID() });
-      reply.setCookie(COOKIE_NAME, token).send({ token });
+      const token = await reply.accessJwtSign({ requestId: randomUUID() });
+      return reply.setCookie(COOKIE_NAME, token).send({ token });
+    });
+
+    app.fastify.get("/generate-expired", async (_request, reply) => {
+      const token = await reply.accessJwtSign({ requestId: randomUUID() }, { sign: { expiresIn: "1ms" } });
+      return reply.setCookie(COOKIE_NAME, token).send({ token });
+    });
+
+    app.fastify.get("/decode-token", async (request, reply) => {
+      const token = await request.accessJwtDecode();
+      return reply.send({ token });
     });
 
     app.fastify.get("/protected-route", {
       onRequest: async (request) => {
-        await request.jwtVerify();
+        await request.accessJwtVerify();
 
         // Get user from database
         request.user.userId = randomUUID();
@@ -143,10 +153,18 @@ describe("verify the jwt token validator plugin", () => {
   });
 
   test("should deny access to protected route with expired token", async () => {
-    const token = app.fastify.jwt.sign({ requestId: randomUUID() }, { expiresIn: "1ms" });
+    const responseWithExpiredToken = await app.fastify.inject({
+      method: "GET",
+      url: "/generate-expired",
+      headers: {
+        origin: app.fastify.config.BASE_URL,
+      },
+    });
 
     // Wait for token expiration
     await new Promise(resolve => setTimeout(resolve, 50));
+
+    const token = responseWithExpiredToken.json().token;
 
     const response = await app.fastify.inject({
       method: "GET",
@@ -165,16 +183,26 @@ describe("verify the jwt token validator plugin", () => {
   });
 
   test("should generate token with correct structure", async () => {
-    const response = await app.fastify.inject({
+    const responseWithToken = await app.fastify.inject({
       method: "GET",
       url: "/generate-token",
       headers: {
-        origin: app.fastify.config.BASE_URL
+        origin: app.fastify.config.BASE_URL,
       }
     });
 
-    const token = response.json().token;
-    const decodedToken = app.fastify.jwt.decode(token);
+    const token = responseWithToken.json().token;
+
+    const response = await app.fastify.inject({
+      method: "GET",
+      url: "/decode-token",
+      headers: {
+        origin: app.fastify.config.BASE_URL,
+        authorization: `Bearer ${token}`
+      }
+    });
+
+    const decodedToken = response.json().token;
 
     expect(decodedToken).toHaveProperty("requestId");
     expect(decodedToken).toHaveProperty("iat");

@@ -1,3 +1,5 @@
+export const ACCESS_TOKEN_NAMESPACE = "access";
+export const REFRESH_TOKEN_NAMESPACE = "refresh";
 export const DEFAULT_ISS = "unisys.platform";
 export const COOKIE_NAME = "unisys.cname"
 export const JWT_DEFAULT_EXPIRES_IN = "5m";

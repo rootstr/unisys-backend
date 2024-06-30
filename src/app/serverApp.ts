@@ -76,6 +76,10 @@ export class FastifyApp {
       encapsulate: false
     })
 
+    await this.fastify.register(autoload, {
+      dir: path.join(__dirname, "../config/database/adapters/plugins"),
+    })
+
     if (this.fastify.config.ENV_MODE === "dev") {
       await this.fastify.register(autoload, {
         dir: path.join(__dirname, "../config/swagger/adapters/plugins"),
@@ -89,6 +93,11 @@ export class FastifyApp {
     await this.fastify.register(autoload, {
       dir: path.join(__dirname, "../health/adapters/routes"),
       options: { prefix: `${API_PREFIX}/health` },
+    });
+
+    await this.fastify.register(autoload, {
+      dir: path.join(__dirname, "../auth/adapters/routes"),
+      options: { prefix: `${API_PREFIX}/auth` }
     });
   }
 
